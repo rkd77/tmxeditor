@@ -1,0 +1,6 @@
+tmxeditor.tap: main.c tmxeditor.c loader.bas t2068.tap Makefile.zcc
+	zcc +ts2068 -clib=ansi -O3 -vn -startup=2 -zorg=33300 -lndos -o tmxeditor.bin main.c
+	rm -f tmxeditor.tap
+	tapmaker tmxeditor.bin tmxeditor.tap
+	zmakebas -n 'TMXEDITOR' -a 10 loader.bas
+	cat t2068.tap out.tap tmxeditor.tap > tmx.tap
