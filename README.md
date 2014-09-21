@@ -14,4 +14,4 @@ Build:
 * autoreconf --install
 * ./configure
 * make check
-* make -C src Makefile.zcc
+* make -C src -f Makefile.zcc
