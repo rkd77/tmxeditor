@@ -14,5 +14,10 @@
 2000 CLS : INPUT "PODAJ NAZWE PLIKU "; F$
 2010 LET begin = PEEK 30720 + 256 * PEEK 30721
 2020 LET length = 20000
+2025 REM l dlugosc
 2030 LOAD f$ CODE begin, length
-2040 GOTO 20
+2040 LET a = 28 + PEEK 23649 + 256 * PEEK 23650
+2050 LET l = PEEK a + 256 * PEEK (a+1)
+2060 IF l < length THEN LET length = l
+2070 POKE begin + length, 0
+2100 GOTO 20
