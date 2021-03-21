@@ -1,17 +1,16 @@
+#include <input.h>
+#include <sys/ioctl.h>
+#include <conio.h>
 #include <stdio.h>
 #include "tmxeditor.h"
 #include "tmxeditor.c"
+
+#pragma redirect fgetc_cons=_fgetc_cons_13
 
 unsigned int ybegin = 0;
 
 unsigned char polish;
 unsigned char *capital = (unsigned char *)23658;
-
-void
-move_cursor(unsigned int y, unsigned int x)
-{
-	printf("\033[%u;%uH", (y + 1), (x + 1));
-} 
 
 unsigned char
 polish_letter(unsigned char ch, unsigned char capital)
@@ -100,7 +99,7 @@ print_lines(unsigned int from, unsigned int to, unsigned char *text)
 
 	for (y = from; y <= to; ++y)
 	{
-		move_cursor(y, 0);
+		gotoxy(0, y);
 		text = print_line(text, 0);
 	}
 }
@@ -108,12 +107,14 @@ print_lines(unsigned int from, unsigned int to, unsigned char *text)
 void
 print_status(void)
 {
-	move_cursor(0, 0);
-	printf("\033[7m[%c%c] %u L:[%u+%u %u/%u] *(%u/%u) %u\033[27m    ",
+	gotoxy(0, 0);
+	printf("\033p[%c%c] %u L:[%u+%u %u/%u] *(%u/%u) %u\033q    ",
 	*capital ? 'C' : 'L', polish ? 'P' : '-', cx, ybegin+1, y - ybegin, y, yend, line + cx - text, end, line[cx]);
-	move_cursor((y - ybegin), cx);
-	printf("\033[4m%c\033[24m", line[cx] < ' ' ? ' ' : line[cx]);
+	gotoxy(cx, (y - ybegin));
+	printf("\0330%c\0331", line[cx] < ' ' ? ' ' : line[cx]);
 }
+
+extern void *udg;
 
 int
 main(int argc, char **argv)
@@ -121,14 +122,21 @@ main(int argc, char **argv)
 	unsigned char oldchar = ' ';
 	unsigned char oldcx = 0;
 	unsigned int oldy = 1;
-	unsigned char k;
+	unsigned int k;
 
-	printf("\033[2J");
+	int mode = 6;
+	void *param = &udg;
+
+	console_ioctl(IOCTL_GENCON_SET_MODE, &mode);
+	console_ioctl(IOCTL_GENCON_SET_UDGS, &param);
+	putch(1);
+	putch(32);
+
 	line = text;
 	cx = 0;
 	cxend = 0;
 	y = 1;
-	end = strchr(text, '\0') - text;
+	end = find_0(text) - text;
 	find_nth_line(text, 50000, &yend);
 	cursor_position();
 	changed_lines = 1;
@@ -173,7 +181,7 @@ main(int argc, char **argv)
 			}
 			else if (!changed_lines)
 			{
-				move_cursor(oldy - ybegin, oldcx);
+				gotoxy(oldcx, oldy - ybegin);
 				fputc_cons(oldchar);
 			}
 			else
@@ -186,16 +194,12 @@ main(int argc, char **argv)
 		{
 			unsigned char begin = cx > 0 ? cx - 1 : 0;
 
-			move_cursor(y - ybegin, begin);
+			gotoxy(begin, y - ybegin);
 			print_line(line, begin);
 		}
 		print_status();
 
-		k = 0;
-		while (!k)
-		{
-			k = fgetc_cons();
-		}
+		k = fgetc_cons();
 
 		changed_one_line = 0;
 		changed_lines = 0;

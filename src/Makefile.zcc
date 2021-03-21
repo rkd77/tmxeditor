@@ -1,6 +1,25 @@
-tmx.tap: main.c tmxeditor.c loader.bas t2068.tap Makefile.zcc
-	zcc +ts2068 -clib=ansi -O3 -vn -startup=2 -zorg=33300 -lndos -o tmxeditor.bin main.c
-	rm -f tmxeditor.tap
-	tapmaker tmxeditor.bin tmxeditor.tap
+tmx64.tap: main.c tmxeditor.c loader.bas t2068.tap Makefile.zcc F8_32_127.BIN F8_128_255.BIN
+	zcc +ts2068 -pragma-redirect:CRT_FONT=_font -DLINE_LENGTH=64 -O2 -vn -zorg=33300 -lndos -o t64.bin main.c f8.asm
+	rm -f t64.tap
+	tapmaker t64.bin t64.tap
 	zmakebas -n 'TMXEDITOR' -a 10 loader.bas
-	cat t2068.tap out.tap tmxeditor.tap > tmx.tap
+	cat t2068.tap out.tap t64.tap > tmx64.tap
+
+#tmx85.tap: main.c tmxeditor.c loader.bas t2068.tap Makefile.zcc
+#	zcc +ts2068 -clib=ansi -pragma-define:ansicolumns=85 -DLINE_LENGTH=85 -O2 -vn -zorg=33300 -lndos -o t85.bin main.c
+#	rm -f t85.tap
+#	tapmaker t85.bin t85.tap
+#	zmakebas -n 'TMXEDITOR' -a 10 loader.bas
+#	cat t2068.tap out.tap t85.tap > tmx85.tap
+
+F8_32_127.BIN: F8.BIN
+	dd if=F8.BIN of=F8_32_127.BIN bs=1 skip=256 count=768
+
+F8_128_255.BIN: F8.BIN
+	dd if=F8.BIN of=F8_128_255.BIN bs=1 skip=1024
+
+F8.BIN: lat2-08.psf
+	dd if=lat2-08.psf of=F8.BIN bs=1 skip=32
+
+lat2-08.psf: lat2-08.psfu
+	psfstriptable lat2-08.psfu lat2-08.psf

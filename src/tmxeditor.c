@@ -2,7 +2,7 @@
 #include <string.h>
 #include "tmxeditor.h"
 
-unsigned char text[TEXT_LENGTH];
+unsigned char text[TEXT_LENGTH] = "";
 unsigned char *line;
 
 char cx, cxend;
@@ -11,6 +11,32 @@ int y = 1, yend = 1;
 int changed_one_line;
 int changed_lines;
 int changed_pos;
+
+unsigned char *
+find_0(unsigned char *pos)
+{
+	while (*pos) pos++;
+
+	return pos;
+}
+
+unsigned char *
+find_10(unsigned char *pos)
+{
+	while (*pos && *pos != 10) pos++;
+
+	if (*pos) return pos;
+
+	return NULL;
+}
+
+unsigned char *
+find_10_or_0(unsigned char *pos)
+{
+	while (*pos && *pos != 10) pos++;
+
+	return pos;
+}
 
 void
 left(void)
@@ -136,16 +162,10 @@ up(void)
 void
 cursor_position(void)
 {
-	char *endline = strchr(line, 10);
+	unsigned char *endline = find_10_or_0(line);
 
 	//fprintf(stderr, "cursor_position: endline = %s", endline);
-
-	if (!endline)
-	{
-		endline = strchr(line, '\0');
-		//fprintf(stderr, "cursor_postion: endline2 = %s", endline);
-	}
-	cxend = endline - (char *)line;
+	cxend = endline - line;
 
 	//fprintf(stderr, "cursor_position: cxend = %d cx=%d\n", cxend, cx);
 	if (cx > cxend)
@@ -166,7 +186,7 @@ down_common(void)
 
 	//fprintf(stderr, "down_common: before line = %s", line);
 
-	line = strchr(line, 10) + 1;
+	line = find_10_or_0(line) + 1;
 	//fprintf(stderr, "down_common: after line = %s", line);
 }
 
@@ -246,7 +266,7 @@ find_nth_line(unsigned char *current, unsigned int n, unsigned int *res)
 
 	for (i = 1; i < n; ++i)
 	{
-		unsigned char *next = strchr(current, 10);
+		unsigned char *next = find_10(current);
 
 		if (!next)
 		{

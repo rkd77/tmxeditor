@@ -2,7 +2,9 @@
 #define TMXEDITOR_H
 
 #define TEXT_LENGTH 20000
-#define LINE_LENGTH 80
+#ifndef LINE_LENGTH
+#define LINE_LENGTH 64
+#endif
 #define LAST_POS_IN_LINE (LINE_LENGTH - 1)
 
 extern unsigned char text[TEXT_LENGTH];
